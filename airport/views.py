@@ -1,7 +1,14 @@
 from rest_framework import mixins, viewsets
 
 from .models import Country, City, Airport, Airplane, AirplaneType, Route, Crew, Flight
-from .serializers import CountrySerializer, CitySerializer, AirportSerializer
+from .serializers import (
+    CountrySerializer,
+    CitySerializer,
+    AirportSerializer,
+    AirplaneTypeSerializer,
+    AirplaneSerializer,
+    CrewSerializer,
+)
 
 
 class CountryViewSet(
@@ -23,3 +30,24 @@ class AirportViewSet(
 ):
     queryset = Airport.objects.select_related("closest_big_city")
     serializer_class = AirportSerializer
+
+
+class AirplaneTypeViewSet(
+    mixins.ListModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet
+):
+    queryset = AirplaneType.objects.all()
+    serializer_class = AirplaneTypeSerializer
+
+
+class AirplaneViewSet(
+    mixins.ListModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet
+):
+    queryset = Airplane.objects.select_related("airplane_type")
+    serializer_class = AirplaneSerializer
+
+
+class CrewViewSet(
+    mixins.ListModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet
+):
+    queryset = Crew.objects.all()
+    serializer_class = CrewSerializer
