@@ -10,12 +10,16 @@ class CountrySerializer(serializers.ModelSerializer):
 
 
 class CitySerializer(serializers.ModelSerializer):
+    country = serializers.SlugRelatedField(slug_field="name", read_only=True)
+
     class Meta:
         model = City
         fields = ("id", "name", "country")
 
 
 class AirportSerializer(serializers.ModelSerializer):
+    closest_big_city = serializers.SlugRelatedField(slug_field="name", read_only=True)
+
     class Meta:
         model = Airport
         fields = ("id", "name", "closest_big_city")
