@@ -124,7 +124,10 @@ class RouteViewSet(
     mixins.RetrieveModelMixin,
     viewsets.GenericViewSet,
 ):
-    queryset = Route.objects.all()
+    queryset = Route.objects.select_related(
+        "source",
+        "destination",
+    )
     serializer_class = RouteSerializer
 
     def get_serializer_class(self):
@@ -142,7 +145,12 @@ class FlightViewSet(
     viewsets.GenericViewSet,
 ):
     queryset = (
-        Flight.objects.select_related("route", "airplane")
+        Flight.objects.select_related(
+            "route",
+            "airplane",
+            "route__destination__closest_big_city",
+            "route__source__closest_big_city",
+        )
         .prefetch_related("crews")
         .annotate(
             tickets_available=(
