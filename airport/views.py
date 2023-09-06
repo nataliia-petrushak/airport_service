@@ -24,6 +24,8 @@ from .serializers import (
     AirplaneSerializer,
     AirplaneListSerializer,
     CrewSerializer,
+    CrewListSerializer,
+    CrewImageSerializer,
     RouteSerializer,
     RouteListSerializer,
     RouteDetailSerializer,
@@ -90,6 +92,13 @@ class CrewViewSet(
 ):
     queryset = Crew.objects.all()
     serializer_class = CrewSerializer
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return CrewListSerializer
+        if self.action == "upload_image":
+            return CrewImageSerializer
+        return self.serializer_class
 
     @action(
         methods=["POST"],
