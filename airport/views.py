@@ -1,7 +1,8 @@
 from django.db.models import F, Count
 from rest_framework import mixins, viewsets, status
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 
 from .models import (
@@ -111,7 +112,7 @@ class CrewViewSet(
         methods=["POST"],
         detail=True,
         url_path="upload-image",
-        # permission_classes=[IsAdminUser],
+        permission_classes=[IsAdminUser],
     )
     def upload_image(self, request, pk=None):
         """Endpoint for uploading image to specific movie"""
@@ -177,14 +178,19 @@ class FlightViewSet(
         return FlightSerializer
 
 
+class OrderPagination(PageNumberPagination):
+    page_size = 10
+    max_page_size = 100
+
+
 class OrderViewSet(
     mixins.ListModelMixin,
     mixins.CreateModelMixin,
     viewsets.GenericViewSet,
 ):
-    queryset = Order.objects.all()
+    queryset = Order.objects.prefetch_related("tickets__flight__route")
     serializer_class = OrderSerializer
-    # pagination_class = OrderPagination
+    pagination_class = OrderPagination
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
