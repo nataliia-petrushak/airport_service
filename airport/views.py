@@ -1,6 +1,16 @@
 from rest_framework import mixins, viewsets
 
-from .models import Country, City, Airport, Airplane, AirplaneType, Route, Crew, Flight
+from .models import (
+    Country,
+    City,
+    Airport,
+    Airplane,
+    AirplaneType,
+    Route,
+    Crew,
+    Flight,
+    Order,
+)
 from .serializers import (
     CountrySerializer,
     CitySerializer,
@@ -17,6 +27,8 @@ from .serializers import (
     FlightSerializer,
     FlightListSerializer,
     FlightDetailSerializer,
+    OrderSerializer,
+    OrderListSerializer,
 )
 
 
@@ -111,3 +123,26 @@ class FlightViewSet(
         if self.action == "retrieve":
             return FlightDetailSerializer
         return FlightSerializer
+
+
+class OrderViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    viewsets.GenericViewSet,
+):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+    # pagination_class = OrderPagination
+    # permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        return Order.objects.filter(user=self.request.user)
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return OrderListSerializer
+
+        return OrderSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)

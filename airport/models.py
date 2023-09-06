@@ -1,5 +1,9 @@
+import os
+import uuid
+
 from django.conf import settings
 from django.db import models
+from django.utils.text import slugify
 from rest_framework.exceptions import ValidationError
 
 
@@ -97,10 +101,10 @@ class Order(models.Model):
 
 
 class Ticket(models.Model):
-    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    order = models.ForeignKey(Order, related_name="tickets", on_delete=models.CASCADE)
     row = models.IntegerField()
     seat = models.IntegerField()
-    flight = models.ForeignKey(Flight, on_delete=models.CASCADE)
+    flight = models.ForeignKey(Flight, related_name="tickets", on_delete=models.CASCADE)
 
     class Meta:
         unique_together = ("flight", "row", "seat")
