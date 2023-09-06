@@ -88,6 +88,18 @@ class CrewSerializer(serializers.ModelSerializer):
         fields = ("id", "first_name", "last_name")
 
 
+class CrewListSerializer(CrewSerializer):
+    class Meta:
+        model = Crew
+        fields = ("id", "first_name", "last_name", "image")
+
+
+class CrewImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Crew
+        fields = ("id", "image")
+
+
 class FlightSerializer(serializers.ModelSerializer):
     class Meta:
         model = Flight
@@ -102,6 +114,7 @@ class FlightListSerializer(FlightSerializer):
     airplane_capacity = serializers.IntegerField(
         source="airplane.capacity", read_only=True
     )
+    tickets_available = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Flight
@@ -110,6 +123,7 @@ class FlightListSerializer(FlightSerializer):
             "route",
             "airplane_name",
             "airplane_capacity",
+            "tickets_available",
             "departure_time",
             "arrival_time",
         )

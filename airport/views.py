@@ -1,4 +1,7 @@
-from rest_framework import mixins, viewsets
+from django.db.models import F, Count
+from rest_framework import mixins, viewsets, status
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from .models import (
     Country,
@@ -88,6 +91,23 @@ class CrewViewSet(
     queryset = Crew.objects.all()
     serializer_class = CrewSerializer
 
+    @action(
+        methods=["POST"],
+        detail=True,
+        url_path="upload-image",
+        # permission_classes=[IsAdminUser],
+    )
+    def upload_image(self, request, pk=None):
+        """Endpoint for uploading image to specific movie"""
+        crew = self.get_object()
+        serializer = self.get_serializer(crew, data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class RouteViewSet(
     mixins.ListModelMixin,
@@ -112,8 +132,14 @@ class FlightViewSet(
     mixins.RetrieveModelMixin,
     viewsets.GenericViewSet,
 ):
-    queryset = Flight.objects.select_related("route", "airplane").prefetch_related(
-        "crews"
+    queryset = (
+        Flight.objects.select_related("route", "airplane")
+        .prefetch_related("crews")
+        .annotate(
+            tickets_available=(
+                F("airplane__rows") * F("airplane__seats_in_row") - Count("tickets")
+            )
+        )
     )
     serializer_class = FlightSerializer
 
