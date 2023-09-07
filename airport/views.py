@@ -1,6 +1,8 @@
 from datetime import datetime
 
 from django.db.models import F, Count, Q
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import mixins, viewsets, status
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -190,6 +192,38 @@ class RouteViewSet(
             )
         return self.queryset
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="country_from",
+                description="Filter by country of departure (ex. ?country_from=Estonia)",
+                type=OpenApiTypes.STR
+            ),
+            OpenApiParameter(
+                name="country_to",
+                description="Filter by country of destination (ex. ?country_to=France)",
+                type=OpenApiTypes.STR
+            ),
+            OpenApiParameter(
+                name="city_from",
+                description="Filter by city of departure (ex. ?city_from=Tallinn)",
+                type=OpenApiTypes.STR
+            ),
+            OpenApiParameter(
+                name="city_to",
+                description="Filter by city of destination (ex. ?city_to=Paris)",
+                type=OpenApiTypes.STR
+            ),
+            OpenApiParameter(
+                name="route",
+                description="Filter by city of departure & city of destination (ex. ?route=Tallinn-Paris)",
+                type=OpenApiTypes.STR
+            )
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
 
 class FlightViewSet(
     mixins.ListModelMixin,
@@ -239,6 +273,28 @@ class FlightViewSet(
             self.queryset = self.queryset.filter(departure_time__date=date)
 
         return self.queryset
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="airport_from",
+                description="Filter by airport of departure (ex. ?airport_from=Tallinn Airport)",
+                type=OpenApiTypes.STR
+            ),
+            OpenApiParameter(
+                name="airport_to",
+                description="Filter by airport of destination (ex. ?airport_to=Riga)",
+                type=OpenApiTypes.STR
+            ),
+            OpenApiParameter(
+                name="date",
+                description="Filter by date of departure (ex. ?date=2023-09-12)",
+                type=OpenApiTypes.DATE
+            )
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
 
 class OrderPagination(PageNumberPagination):
