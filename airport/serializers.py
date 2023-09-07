@@ -1,6 +1,7 @@
 from django.db import transaction
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
+from rest_framework.relations import PrimaryKeyRelatedField
 
 from .models import (
     Country,
@@ -174,12 +175,12 @@ class FlightDetailSerializer(serializers.ModelSerializer):
 
 
 class OrderSerializer(serializers.ModelSerializer):
-    tickets = TicketSerializer(allow_null=False, many=True, read_only=True)
+    tickets = TicketSerializer(many=True, read_only=False, allow_null=False)
     created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M")
 
     class Meta:
         model = Order
-        fields = ("id", "user", "tickets", "created_at")
+        fields = ("id", "tickets", "created_at")
 
     def create(self, validated_data):
         with transaction.atomic():
