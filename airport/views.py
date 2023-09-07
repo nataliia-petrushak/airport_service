@@ -1,4 +1,6 @@
-from django.db.models import F, Count
+from datetime import datetime
+
+from django.db.models import F, Count, Q
 from rest_framework import mixins, viewsets, status
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -58,6 +60,7 @@ class CityViewSet(
     def get_serializer_class(self):
         if self.action == "list":
             return CityListSerializer
+
         return self.serializer_class
 
 
@@ -71,6 +74,7 @@ class AirportViewSet(
     def get_serializer_class(self):
         if self.action == "list":
             return AirportListSerializer
+
         return self.serializer_class
 
 
@@ -91,6 +95,7 @@ class AirplaneViewSet(
     def get_serializer_class(self):
         if self.action == "list":
             return AirplaneListSerializer
+
         return self.serializer_class
 
 
@@ -104,8 +109,10 @@ class CrewViewSet(
     def get_serializer_class(self):
         if self.action == "list":
             return CrewListSerializer
+
         if self.action == "upload_image":
             return CrewImageSerializer
+
         return self.serializer_class
 
     @action(
@@ -142,9 +149,46 @@ class RouteViewSet(
     def get_serializer_class(self):
         if self.action == "list":
             return RouteListSerializer
+
         if self.action == "retrieve":
             return RouteDetailSerializer
+
         return RouteSerializer
+
+    def get_queryset(self):
+        country_from = self.request.query_params.get("country_from")
+        country_to = self.request.query_params.get("country_to")
+        city_from = self.request.query_params.get("city_from")
+        city_to = self.request.query_params.get("city_to")
+        route = self.request.query_params.get("route")
+
+        if country_from:
+            self.queryset = self.queryset.filter(
+                source__closest_big_city__country__name__icontains=country_from
+            )
+
+        if country_to:
+            self.queryset = self.queryset.filter(
+                destination__closest_big_city__country__name__icontains=country_to
+            )
+
+        if city_from:
+            self.queryset = self.queryset.filter(
+                source__closest_big_city__name__icontains=city_from
+            )
+
+        if city_to:
+            self.queryset = self.queryset.filter(
+                source__closest_big_city__name__icontains=city_to
+            )
+
+        if route:
+            route = route.split("-")
+            self.queryset = self.queryset.filter(
+                Q(source__closest_big_city__name__icontains=route[0]),
+                Q(destination__closest_big_city__name__icontains=route[-1]),
+            )
+        return self.queryset
 
 
 class FlightViewSet(
@@ -173,9 +217,28 @@ class FlightViewSet(
     def get_serializer_class(self):
         if self.action == "list":
             return FlightListSerializer
+
         if self.action == "retrieve":
             return FlightDetailSerializer
+
         return FlightSerializer
+
+    def get_queryset(self):
+        airport_from = self.request.query_params.get("airport_from")
+        airport_to = self.request.query_params.get("airport_to")
+        date = self.request.query_params.get("date")
+
+        if airport_from:
+            self.queryset = self.queryset.filter(route__source__name__icontains=airport_from)
+
+        if airport_to:
+            self.queryset = self.queryset.filter(route__destination__name__icontains=airport_to)
+
+        if date:
+            date = datetime.strptime(date, "%Y-%m-%d").date()
+            self.queryset = self.queryset.filter(departure_time__date=date)
+
+        return self.queryset
 
 
 class OrderPagination(PageNumberPagination):
