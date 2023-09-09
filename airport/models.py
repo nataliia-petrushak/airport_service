@@ -39,9 +39,9 @@ class Airport(models.Model):
 
 
 class Route(models.Model):
-    source = models.ForeignKey(Airport, related_name="source", on_delete=models.CASCADE)
+    source = models.ForeignKey(Airport, related_name="source_routes", on_delete=models.CASCADE)
     destination = models.ForeignKey(
-        Airport, related_name="destination", on_delete=models.CASCADE
+        Airport, related_name="destination_routes", on_delete=models.CASCADE
     )
     distance = models.IntegerField()
 
@@ -74,7 +74,7 @@ def crew_image_file_path(instance, filename):
     _, extension = os.path.splitext(filename)
     filename = f"{slugify(instance.last_name)}-{uuid.uuid4()}{extension}"
 
-    return os.path.join("uploads/crews/", filename)
+    return os.path.join("uploads", "crews", filename)
 
 
 class Crew(models.Model):

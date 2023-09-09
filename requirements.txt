@@ -11,6 +11,7 @@ jsonschema-specifications==2023.7.1
 Pillow==10.0.0
 psycopg2-binary==2.9.7
 PyJWT==2.8.0
+python-dotenv==1.0.0
 pytz==2023.3.post1
 PyYAML==6.0.1
 referencing==0.30.2
